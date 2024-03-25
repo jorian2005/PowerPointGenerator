@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGK Nunspeet, PowerPoint generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <img src="https://cgknunspeet.nl/wp-content/uploads/2015/07/CGKHeader5.png" alt="CGK Nunspeet Logo"
+    style="display: block; margin-left: auto; margin-right: auto; width: 50%;">
+  <div class="container">
+    <form action="/generate" method="POST">
+      <div class="mb-3">
+        <label for="dominee" class="form-label">Dominee:</label>
+        <input type="text" id="dominee" class="form-control" name="dominee">
+      </div>
+      <div class="mb-3">
+        <label for="ouderling" class="form-label">Ouderling van dienst:</label>
+        <input type="text" id="ouderling" class="form-control" name="ouderling">
+      </div>
+      <div class="mb-3">
+        <label for="organist" class="form-label">Organist:</label>
+        <input type="text" id="organist" class="form-control" name="organist" >
+      </div>
+      <div class="mb-3">
+        <label for="liederen" class="form-label">Liederen:</label>
+        <textarea id="liederen" class="form-control" name="liederen" rows="10" cols="50"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="schriftlezing" class="form-label">Schriftlezing:</label>
+        <textarea id="schriftlezing" class="form-control" name="schriftlezing" rows="4" cols="50"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="collecte1" class="form-label">Collecte 1:</label>
+        <input type="text" id="collecte1" class="form-control" name="collecte1">
+      </div>
+      <div class="mb-3">
+        <label for="collecte1Image" class="form-label">Collecte 1 Afbeelding URL:</label>
+        <input type="text" id="collecte1Image" class="form-control" name="collecte1Image">
+      </div>
+      <div class="mb-3">
+        <label for="collecte2" class="form-label">Collecte 2:</label>
+        <input type="text" id="collecte2" class="form-control" name="collecte2">
+        <label for="collecte2Image" class="form-label">Collecte 2 Afbeelding URL:</label>
+        <input type="text" id="collecte2Image" class="form-control" name="collecte2Image">
+      </div>
+      <div class="mb-3">
+        <label for="collecte3" class="form-label">Collecte 3:</label>
+        <input type="text" id="collecte3" class="form-control" name="collecte3">
+        <label for="collecte3Image" class="form-label">Collecte 3 Afbeelding URL:</label>
+        <input type="text" id="collecte3Image" class="form-control" name="collecte3Image">
+      </div>
+      <div class="mb-3">
+        <label for="datum" class="form-label">Datum:</label>
+        <input type="date" id="datum" class="form-control" name="datum"
+          value="<script>document.write(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))</script>">
+      </div>
+      <div class="mb-3">
+        <label for="dienst" class="form-label">Dienst:</label>
+        <select id="dienst" class="form-control" name="dienst">
+          <option value="Morgendienst">Morgendienst</option>
+          <option value="Middagdienst">Middagdienst</option>
+          <option value="Avonddienst">Avonddienst</option>
+        </select>
+        <label for="bestandsnaam" class="form-label">Bestandsnaam:</label>
+        <input type="text" id="bestandsnaam" class="form-control" name="bestandsnaam">
+      </div>
+        <input type="submit" class="btn btn-primary" value="Genereer PowerPoint">
+      </div>
+    </form>
+  </div>
+</body>
+
+</html>
