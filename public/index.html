@@ -6,11 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CGK Nunspeet, PowerPoint generator</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -28,7 +24,7 @@
       </div>
       <div class="mb-3">
         <label for="organist" class="form-label">Organist:</label>
-        <input type="text" id="organist" class="form-control" name="organist" >
+        <input type="text" id="organist" class="form-control" name="organist">
       </div>
       <div class="mb-3">
         <label for="liederen" class="form-label">Liederen:</label>
@@ -60,8 +56,7 @@
       </div>
       <div class="mb-3">
         <label for="datum" class="form-label">Datum:</label>
-        <input type="date" id="datum" class="form-control" name="datum"
-          value="<script>document.write(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))</script>">
+        <input type="date" id="datum" class="form-control" name="datum">
       </div>
       <div class="mb-3">
         <label for="dienst" class="form-label">Dienst:</label>
@@ -70,12 +65,17 @@
           <option value="Middagdienst">Middagdienst</option>
           <option value="Avonddienst">Avonddienst</option>
         </select>
+        <label for="kerkgebouw" class="form-label">Kerkgebouw:</label>
+        <select id="kerkgebouw" class="form-control" name="kerkgebouw">
+          <option value="Dorpskerk">Dorpskerk</option>
+          <option value="Oenenburgkerk">Oenenburgkerk</option>
+        </select>
         <label for="bestandsnaam" class="form-label">Bestandsnaam:</label>
         <input type="text" id="bestandsnaam" class="form-control" name="bestandsnaam">
       </div>
-        <input type="submit" class="btn btn-primary" value="Genereer PowerPoint">
-      </div>
-    </form>
+      <input type="submit" class="btn btn-primary" value="Genereer PowerPoint">
+  </div>
+  </form>
   </div>
 </body>
 

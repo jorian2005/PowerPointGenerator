@@ -1,15 +1,18 @@
-const express = require("express");
-const pptxgen = require("pptxgenjs");
-const path = require("path");
+import express from "express";
+import pptxgen from "pptxgenjs";
+import path from "path";
+import fs from "fs";
+import fetch from "node-fetch";
+import { fileURLToPath } from 'url';
 
 const app = express();
 const port = 3000;
 
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({ extended: true }));
 
 const urlToImage = async (url) => {
   try {
@@ -22,11 +25,40 @@ const urlToImage = async (url) => {
   }
 };
 
+const addTextWithImage = async (slide, text, imagePath, x, y, w, h) => {
+  try {
+    let imageOptions = {};
+    if (imagePath.startsWith("http")) {
+      const imageBuffer = await urlToImage(imagePath);
+      imageOptions.data = imageBuffer;
+    } else {
+      let absoluteImagePath = imagePath;
+      if (!imagePath.startsWith("http")) {
+        const publicImagePath = `public/${imagePath}`;
+        absoluteImagePath = path.join(__dirname, publicImagePath);
+      }
+
+      // Kijk of het bestand bestaat en of het een bestand is
+      if (fs.existsSync(absoluteImagePath) && fs.statSync(absoluteImagePath).isFile()) {
+        imageOptions.path = absoluteImagePath;
+        slide.addImage(Object.assign(imageOptions, { x, y: y + 0.2, w, h }));
+      } else {
+        console.error("Image file does not exist or is not a file:", absoluteImagePath);
+      }
+    }
+    slide.addText(text, { x: x + 0.005, y, fontSize: 15, bold: true });
+  } catch (error) {
+    console.error("Error adding text with image:", error);
+  }
+};
+
 app.get("/", (req, res) => {
-  res.render("index", { dominee: "", ouderling: "", organist: "", liederen: "", bestandsnaam: "", datum: "", dienst: "" });
+  const indexPath = path.join(__dirname, "public", "index.html");
+  res.sendFile(indexPath);
 });
 
 app.post("/generate", async (req, res) => {
+  // changeImage();
   let meewerkenden = {
     dominee: [],
     ouderling: [],
@@ -41,7 +73,7 @@ app.post("/generate", async (req, res) => {
   }
   if (req.body.organist) {
     meewerkenden.organist = req.body.organist.split("\n").filter(Boolean);
-  }
+  };
 
   const liederen = req.body.liederen.split("\n").filter(Boolean);
   const datum = new Date(req.body.datum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -54,49 +86,45 @@ app.post("/generate", async (req, res) => {
   ];
 
   const pptx = new pptxgen();
-  const slide = pptx.addSlide();
-  const addTextWithImage = async (text, imagePath, x, y, w, h) => {
-    if (imagePath.startsWith("http")) {
-      const imageBuffer = await urlToImage(imagePath);
-      slide.addImage({ data: imageBuffer, x, y: y + 0.5, w, h });
-    } else {
-      slide.addImage({ path: imagePath, x, y: y + 0.5, w, h });
-    }
-    slide.addText(text, { x, y, fontSize: 15, bold: true });
-  };
 
+  // function changeImage() {
+  //   var selectBox = document.getElementById("kerkgebouw");
+  //   var selectedKerk = selectBox.value;
+
+  //   var imagePath = "";
+  //   if (selectedKerk === "Dorpskerk") {
+  //     imagePath = "public/Dorpskerk.png";
+  //   } else if (selectedKerk === "Oenenburgkerk") {
+  //     imagePath = "public/Oenenburgkerk.png";
+  //   }
+
+  //   var kerkAfbeelding = document.getElementById("kerkAfbeelding");
+  //   kerkAfbeelding.src = imagePath;
+  // }
+
+  // Maak de eerste dia aan
+  const welkomSlide = pptx.addSlide();
+
+  // Positie van de tekst en afbeelding
   const xPosition = 1;
-  const yPosition = 3;
+  const yPosition = 1;
+  const xPos = 1;
 
-  // Aankondiging van de dienst
-  addTextWithImage(`Welkom in de ${dienst} van ${datum} `, "", xPosition, 1, 6, 1);
-  slide.addText("", { x: xPosition, y: yPosition + 4, w: 6, h: 1, align: "center" });
+  // Tekst en afbeelding toevoegen aan de welkom dia
+  welkomSlide.addText(`Welkom in de ${dienst} van ${datum} `, { x: 0, y: 0.5, w: 10, h: 1, align: "center", fontSize: 30, bold: true });
+  welkomSlide.addImage({ path: "public/dorpskerk.png", x: xPosition + 1, y: yPosition + 0.5, w: 6, h: 2 });
+  // Meewerkenden
+  addTextWithImage(welkomSlide, `Dominee: ${meewerkenden.dominee}`, "dominee.jpg", xPos, 4, 1, 1);
+  addTextWithImage(welkomSlide, `Ouderling: ${meewerkenden.ouderling}`, "ouderling.jpg", xPos + 3, 4, 1, 1);
+  addTextWithImage(welkomSlide, `Organist: ${meewerkenden.organist}`, "organist.jpg", xPos + 6, 4, 1, 1);
 
-  // Medewerkenden op Aankondigingsslide
-  let xPos = xPosition;
+  // Maak de tweede dia aan voor collecte
+  const collectesSlide = pptx.addSlide();
 
-  // dominee
-  meewerkenden.dominee.forEach((persoon) => {
-    const imagePath = path.resolve(__dirname, "public", "dominee.jpg");
-    addTextWithImage(`Dominee: ${persoon}`, imagePath, xPos, yPosition, 1, 1);
-    xPos += 3;
-  });
+  // Titel toevoegen aan de collectes dia
+  collectesSlide.addText("Collectes", { x: 0.5, y: 0.5, w: 8, h: 1, align: "center", fontSize: 30, bold: true });
 
-  // ouderling
-  meewerkenden.ouderling.forEach((persoon) => {
-    const imagePath = path.resolve(__dirname, "public", "ouderling.jpg");
-    addTextWithImage(`Ouderling: ${persoon}`, imagePath, xPos, yPosition, 1, 1);
-    xPos += 3;
-  });
-
-  // organist
-  meewerkenden.organist.forEach((persoon) => {
-    const imagePath = path.resolve(__dirname, "public", "organist.jpg");
-    addTextWithImage(`Organist: ${persoon}`, imagePath, xPos, yPosition, 1, 1);
-    xPos += 3;
-  });
-
-  // Collectes toevoegen
+  // Afbeeldingen en tekst toevoegen aan de collectes dia
   for (let i = 0; i < collectes.length; i++) {
     const collecte = collectes[i];
     const { name, image } = collecte;
@@ -104,26 +132,51 @@ app.post("/generate", async (req, res) => {
       let imagePath = image.trim();
       if (imagePath.startsWith("http")) {
         const imageBuffer = await urlToImage(imagePath);
-        slide.addImage({ data: imageBuffer, x: xPosition, y: yPosition + 4 + i, w: 1, h: 1 });
+        collectesSlide.addImage({ data: imageBuffer, x: xPosition, y: yPosition + 0.5 + i, w: 1, h: 1 });
       } else {
-        imagePath = path.resolve(__dirname, "public", imagePath);
-        slide.addImage({ path: imagePath, x: xPosition, y: yPosition + 4 + i, w: 1, h: 1 });
+        imagePath = path.join(__dirname, "public", imagePath);
+        collectesSlide.addImage({ path: imagePath, x: xPosition, y: yPosition + 0.5 + i, w: 1, h: 1 });
       }
-      slide.addText(`Collecte ${i + 1}: ${name}`, { x: xPosition + 1, y: yPosition + 4 + i, w: 5, h: 1 });
+      collectesSlide.addText(`Collecte ${i + 1}: ${name}`, { x: xPosition + 1, y: yPosition + 0.5 + i, w: 8, h: 1 });
     }
   }
 
-  // Save the PowerPoint file
   const filename = req.body.bestandsnaam || "meewerkenden_en_liederen.pptx";
-  pptx.writeFile({ fileName: `public/${filename}` }, (error) => {
-    if (error) {
-      console.error(error);
-      res.send("Er is een fout opgetreden bij het genereren van de PowerPoint.");
-    } else {
-      console.log("PowerPoint-bestand gegenereerd!");
-      res.download(`public/${filename}`);
-    }
-  });
+  const filepath = path.join(__dirname, "public", filename);
+
+  try {
+    const buffer = await pptx.write("nodebuffer");
+    console.log("Generated PowerPoint Buffer:", buffer); // Log the buffer
+
+    // Bestand schrijven naar de server
+    fs.writeFile(filepath, buffer, (error) => {
+      if (error) {
+        console.error("Error writing PowerPoint file:", error);
+        res.send("An error occurred while generating the PowerPoint.");
+      } else {
+        console.log("PowerPoint file generated!");
+        // Stuur het bestand naar de client
+        res.download(filepath, filename, (downloadError) => {
+          if (downloadError) {
+            console.error("Error downloading the file:", downloadError);
+          } else {
+            console.log("File downloaded successfully!");
+          }
+          // Verwijder het bestand van de server
+          fs.unlink(filepath, (unlinkError) => {
+            if (unlinkError) {
+              console.error("Error removing the file:", unlinkError);
+            } else {
+              console.log("File removed successfully!");
+            }
+          });
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Error generating PowerPoint:", error);
+    res.send("An error occurred while generating the PowerPoint.");
+  }
 });
 
 app.listen(port, () => {
