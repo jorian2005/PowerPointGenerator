@@ -57,7 +57,6 @@ app.post("/generate", async (req, res) => {
   
 });
 
-
 app.listen(port, () => {
   console.log(`Server gestart op http://localhost:${port}`);
 });
