@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { publicDecrypt } from "crypto";
 
 const app = express();
-const port = 3000;
+// const port = 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -180,6 +180,6 @@ app.post("/generate", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server gestart op http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server gestart op http://localhost:${port}`);
+// });
