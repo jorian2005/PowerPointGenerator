@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import fetch from "node-fetch";
 import { fileURLToPath } from 'url';
+import { publicDecrypt } from "crypto";
 
 const app = express();
 const port = 3000;
@@ -38,7 +39,7 @@ const addTextWithImage = async (slide, text, imagePath, x, y, w, h) => {
         absoluteImagePath = path.join(__dirname, publicImagePath);
       }
 
-      // Kijk of het bestand bestaat en of het een bestand is
+      // Check of het bestand bestaat en of het een bestand is
       if (fs.existsSync(absoluteImagePath) && fs.statSync(absoluteImagePath).isFile()) {
         imageOptions.path = absoluteImagePath;
         slide.addImage(Object.assign(imageOptions, { x, y: y + 0.2, w, h }));
@@ -46,19 +47,13 @@ const addTextWithImage = async (slide, text, imagePath, x, y, w, h) => {
         console.error("Image file does not exist or is not a file:", absoluteImagePath);
       }
     }
-    slide.addText(text, { x: x + 0.005, y, fontSize: 15, bold: true });
+    slide.addText(text, { x, y, fontSize: 15, bold: true });
   } catch (error) {
     console.error("Error adding text with image:", error);
   }
 };
 
-app.get("/", (req, res) => {
-  const indexPath = path.join(__dirname, "public", "index.html");
-  res.sendFile(indexPath);
-});
-
 app.post("/generate", async (req, res) => {
-  // changeImage();
   let meewerkenden = {
     dominee: [],
     ouderling: [],
@@ -87,21 +82,6 @@ app.post("/generate", async (req, res) => {
 
   const pptx = new pptxgen();
 
-  // function changeImage() {
-  //   var selectBox = document.getElementById("kerkgebouw");
-  //   var selectedKerk = selectBox.value;
-
-  //   var imagePath = "";
-  //   if (selectedKerk === "Dorpskerk") {
-  //     imagePath = "public/Dorpskerk.png";
-  //   } else if (selectedKerk === "Oenenburgkerk") {
-  //     imagePath = "public/Oenenburgkerk.png";
-  //   }
-
-  //   var kerkAfbeelding = document.getElementById("kerkAfbeelding");
-  //   kerkAfbeelding.src = imagePath;
-  // }
-
   // Maak de eerste dia aan
   const welkomSlide = pptx.addSlide();
 
@@ -110,13 +90,34 @@ app.post("/generate", async (req, res) => {
   const yPosition = 1;
   const xPos = 1;
 
+  // Haal de afbeeldings-URL op uit het formulier
+
   // Tekst en afbeelding toevoegen aan de welkom dia
-  welkomSlide.addText(`Welkom in de ${dienst} van ${datum} `, { x: 0, y: 0.5, w: 10, h: 1, align: "center", fontSize: 30, bold: true });
-  welkomSlide.addImage({ path: "public/dorpskerk.png", x: xPosition + 1, y: yPosition + 0.5, w: 6, h: 2 });
+  welkomSlide.addText(`Welkom in de ${dienst} van ${datum}`, { x: 0, y: 0.5, w: 10, h: 1, align: "center", fontSize: 30, bold: true });
+  if (req.body.kerkgebouw === "Oenenburgkerk") {
+    welkomSlide.addImage({ path: "public/oenenburgkerk.png", x: xPosition + 1, y: yPosition + 0.5, w: 6, h: 2 });
+  } else if (req.body.kerkgebouw === "Dorpskerk") {
+    welkomSlide.addImage({ path: "public/dorpskerk.png", x: xPosition + 1, y: yPosition + 0.5, w: 6, h: 2 });
+  }
   // Meewerkenden
-  addTextWithImage(welkomSlide, `Dominee: ${meewerkenden.dominee}`, "dominee.jpg", xPos, 4, 1, 1);
-  addTextWithImage(welkomSlide, `Ouderling: ${meewerkenden.ouderling}`, "ouderling.jpg", xPos + 3, 4, 1, 1);
-  addTextWithImage(welkomSlide, `Organist: ${meewerkenden.organist}`, "organist.jpg", xPos + 6, 4, 1, 1);
+  if (req.body.kerkgebouw === "Oenenburgkerk") {
+    addTextWithImage(welkomSlide, `Dominee: ${meewerkenden.dominee}`, "DomineeOBK.jpg", xPos, 4, 1, 1);
+  } else if (req.body.kerkgebouw === "Dorpskerk") {
+    addTextWithImage(welkomSlide, `Dominee: ${meewerkenden.dominee}`, "dominee.jpg", xPos, 4, 1, 1);
+  }
+  //Ouderling
+  if (req.body.kerkgebouw === "Oenenburgkerk") {
+    addTextWithImage(welkomSlide, `Ouderling: ${meewerkenden.ouderling}`, "ouderlingOBK.jpg", xPos + 3, 4, 1, 1);
+  } else if (req.body.kerkgebouw === "Dorpskerk") {
+    addTextWithImage(welkomSlide, `Ouderling: ${meewerkenden.ouderling}`, "ouderling.jpg", xPos + 3, 4, 1, 1);
+  }
+  //Organist
+  if (req.body.kerkgebouw === "Oenenburgkerk") {
+    addTextWithImage(welkomSlide, `Organist: ${meewerkenden.organist}`, "organistOBK.jpg", xPos + 6, 4, 1, 1);
+  } else if (req.body.kerkgebouw === "Dorpskerk") {
+    addTextWithImage(welkomSlide, `Organist: ${meewerkenden.organist}`, "organist.jpg", xPos + 6, 4, 1, 1);
+  }
+  
 
   // Maak de tweede dia aan voor collecte
   const collectesSlide = pptx.addSlide();
