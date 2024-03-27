@@ -53,7 +53,7 @@ const addTextWithImage = async (slide, text, imagePath, x, y, w, h) => {
   }
 };
 
-app.post("/generate", async (req, res) => {
+app.post("generate", async (req, res) => {
   
 });
 
